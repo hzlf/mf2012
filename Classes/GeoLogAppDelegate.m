@@ -7,14 +7,17 @@
 //
 
 #import "GeoLogAppDelegate.h"
-
 #import <CoreLocation/CoreLocation.h>
+
+#import "GeoAPI.h"
 
 @implementation GeoLogAppDelegate
 
 @synthesize window;
 @synthesize navigationController;
 @synthesize tabBarController;
+
+
 
 
 #pragma mark -
@@ -29,6 +32,9 @@
 		[window makeKeyAndVisible];
         [window addSubview:tabBarController.view];
 	}
+    
+    // [GeoAPI updatePos];
+    
 
 	// 起動オプションにUIApplicationLaunchOptionsLocationKey がある場合、
 	// startMonitoringSignificantLocationChanges で起動されている。新たに Location 取得を開始。

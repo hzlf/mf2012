@@ -9,8 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "LocationCheckViewController.h"
 
+#import "GeoAPI.h"
+
 @interface GeoLogAppDelegate : NSObject <UIApplicationDelegate> {
     UIWindow *window;
+     
 	LocationCheckViewController *locController;
     //UINavigationController *navigationController;
     UITabBarController *tabBarController;

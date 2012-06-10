@@ -19,9 +19,10 @@
 #import "RFResponse.h"
 #import "RFService.h"
 
+#import "GeoAPI.h"
+
 @implementation LocationCheckViewController
 
- // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) return nil;
 
@@ -42,16 +43,12 @@
 	[btnGpsStart addTarget:self action:@selector(pressGpsStart:) forControlEvents:UIControlEventTouchUpInside];
 	[btnGpsStart setTitle:kLBL_GPSSTART forState:UIControlStateNormal];
 	[btnGpsStart setFrame:CGRectMake(10, 400, 300, 40)];
-    /*
-	btnSigStart = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	[btnSigStart addTarget:self action:@selector(pressSigStart:) forControlEvents:UIControlEventTouchUpInside];
-	[btnSigStart setTitle:kLBL_SIGSTART forState:UIControlStateNormal];
-	[btnSigStart setFrame:CGRectMake(210, 350, 100, 40)];
-     */
+    
 	btnSend = [UIButton buttonWithType:UIButtonTypeRoundedRect];
 	[btnSend addTarget:self action:@selector(pressSend:) forControlEvents:UIControlEventTouchUpInside];
 	[btnSend setTitle:kLBL_SEND forState:UIControlStateNormal];
 	[btnSend setFrame:CGRectMake(10, 400, 100, 40)];
+    
 	btnRemove = [UIButton buttonWithType:UIButtonTypeRoundedRect];
 	[btnRemove addTarget:self action:@selector(pressRemove:) forControlEvents:UIControlEventTouchUpInside];
 	[btnRemove setTitle:kLBL_REMOVE forState:UIControlStateNormal];
@@ -59,8 +56,6 @@
 	[self.view addSubview:mapView];
 	[self.view addSubview:btnGpsStart];
 	[self.view addSubview:btnSigStart];
-	//[self.view addSubview:btnSend];
-	//[self.view addSubview:btnRemove];
 	
     return self;
 }
@@ -87,22 +82,21 @@
 */
 
 - (void)didReceiveMemoryWarning {
-    // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
-    
-    // Release any cached data, images, etc that aren't in use.
 }
 
 - (void)viewDidUnload {
     [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
 }
-// ロギング用の文字列生成
+
+
+
+
 -(NSString *) makeLogText:(CLLocation *)loc{
 	NSDate *now = [NSDate date]; 
 	NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
 	[fmt setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+
     NSString *logstr = [NSString stringWithFormat:@"%@,location,%0.8f,%0.8f,%0.0f,%0.0f,%0.2f",
                         [fmt stringFromDate:now],
 						loc.coordinate.latitude,
@@ -112,29 +106,22 @@
                         [[UIDevice currentDevice] batteryLevel]
 						];
     
-    // NSString *strlat = [NSString stringWithFormat:@"%0.8f", loc.coordinate.latitude];
-    // NSString *strlon = [NSString stringWithFormat:@"%0.8f", loc.coordinate.longitude];
     NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueIdentifier]];
     
     NSString *strcoordinate = [NSString stringWithFormat: @"POINT (%0.8f %0.8f)", loc.coordinate.longitude, loc.coordinate.latitude];
-    NSLog(@"%@", strcoordinate);
-    
-    
-    // NSLog(@"%0.8f", loc.coordinate.latitude);
+
     
     RFRequest *r = [RFRequest requestWithURL:[NSURL URLWithString:@"http://movingforest.net.node05.daj.anorg.net/"]type:RFRequestMethodPost resourcePathComponents:@"forest", @"api", @"positions/?format=json", nil];
     
-    // [r addParam:strlat forKey:@"lat"];
+    
     [r addParam:strcoordinate forKey:@"coordinates"];
     [r addParam:struid forKey:@"uid"];
     
     //now execute this request and fetch the response in a block
     [RFService execRequest:r completion:^(RFResponse *response) {
         NSLog(@"%@", response); //print out full response
-        // NSLog(@"%@", response.dataValue); //dataValue is received response as NSData (e.g. you can do [response.dataValue objectFromJSONData])
     }];
     
-    // NSLog(@"%@", loc.coordinate.longitude);
 	return logstr;
 }
 
@@ -213,15 +200,15 @@
 -(void)startGpsLog{
 	if (isUpdating){
 		[self logText:@"stop logging"];
-		//[locMan stopUpdatingLocation];
-		[locMan stopMonitoringSignificantLocationChanges];
+		[locMan stopUpdatingLocation];
+		//[locMan stopMonitoringSignificantLocationChanges];
 		isUpdating = NO;
 		[btnGpsStart setTitle:kLBL_GPSSTART forState:UIControlStateNormal];
 	}else{
 		[self logText:@"start logging"];
         NSLog(@"Simple message");
-		//[locMan startUpdatingLocation];
-		[locMan startMonitoringSignificantLocationChanges];
+		[locMan startUpdatingLocation];
+		//[locMan startMonitoringSignificantLocationChanges];
 		isUpdating = YES;
 		[btnGpsStart setTitle:kLBL_STOP forState:UIControlStateNormal];
 	}
@@ -232,8 +219,8 @@
 	}else{
 		[self logText:@"start logging"];
         NSLog(@"Simple message");
-		//[locMan startUpdatingLocation];
-		 [locMan startMonitoringSignificantLocationChanges];
+		[locMan startUpdatingLocation];
+        //[locMan startMonitoringSignificantLocationChanges];
 		isUpdating = YES;
 		[btnGpsStart setTitle:kLBL_STOP forState:UIControlStateNormal];
 	}
@@ -270,10 +257,85 @@
 - (void)locationManager:(CLLocationManager *)manager
 	didUpdateToLocation:(CLLocation *)newLocation
 		   fromLocation:(CLLocation *)oldLocation{
-	NSString *log = [self makeLogText:newLocation];
-	[mapView setCenterCoordinate:newLocation.coordinate];
-	[self logText:log];
+    
+    
+    BOOL isInBackground = NO;
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground)
+    {
+        isInBackground = YES;
+    }
+    
+    // Handle location updates as normal, code omitted for brevity.
+    // The omitted code should determine whether to reject the location update for being too
+    // old, too close to the previous one, too inaccurate and so forth according to your own
+    // application design.
+    
+    if (isInBackground)
+    {
+        [self logText:@"update from background"];
+        // NSString *log = [self makeLogText:newLocation];
+        
+        static NSString * const context = @"background";
+        
+        [self sendBackgroundLocationToServer:newLocation:context];
+        //[self logText:log];
+    }
+    else
+    {
+        [self logText:@"update from foreground"];
+        
+        
+        [mapView setCenterCoordinate:newLocation.coordinate];
+        
+        
+        static NSString * const context = @"foreground";
+        
+        [self sendBackgroundLocationToServer:newLocation:context];
+        
+        //NSString *log = [self makeLogText:newLocation];
+        //[self logText:log];
+    }
+    
 }
+
+
+-(void) sendBackgroundLocationToServer:(CLLocation *)location:(NSString *)context
+{
+    UIApplication*    app = [UIApplication sharedApplication];
+    bgTask = [app beginBackgroundTaskWithExpirationHandler:^{
+        [app endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+    }];
+    
+    NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueIdentifier]];
+    NSString *strcoordinate = [NSString stringWithFormat: @"POINT (%0.8f %0.8f)", location.coordinate.longitude, location.coordinate.latitude];
+
+    
+    RFRequest *r = [RFRequest requestWithURL:[NSURL URLWithString:@"http://node02.daj.anorg.net/"]type:RFRequestMethodPost resourcePathComponents:@"forest", @"api", @"positions/?format=json", nil];
+    
+    
+    [r addParam:strcoordinate forKey:@"coordinates"];
+    [r addParam:struid forKey:@"uid"];
+    // [r addParam:context forKey:@"app_context"];
+    
+    //now execute this request and fetch the response in a block
+    [RFService execRequest:r completion:^(RFResponse *response) {
+        NSLog(@"%@", response); //print out full response
+        NSLog(@"API request done");
+    }];
+    
+     
+     
+    if (bgTask != UIBackgroundTaskInvalid)
+    {
+        [[UIApplication sharedApplication] endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+    }
+        
+}
+
+
+
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
 	[self logTextWithTime:[NSString stringWithFormat:@"LocationManager Failed %@", [error localizedDescription]]];
@@ -298,7 +360,6 @@
 	[mapView release];
 	[locMan release];
 	[btnGpsStart release];
-	//[btnSigStart release];
 	[btnSend release];
 	[btnRemove release];
     [super dealloc];

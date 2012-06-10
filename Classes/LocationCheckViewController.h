@@ -12,19 +12,21 @@
 
 
 
-@interface LocationCheckViewController : UIViewController<MKMapViewDelegate,CLLocationManagerDelegate,UIAlertViewDelegate,MKMapViewDelegate> {
+@interface LocationCheckViewController : UIViewController<MKMapViewDelegate, CLLocationManagerDelegate,UIAlertViewDelegate, MKMapViewDelegate> {
 	MKMapView *mapView;
 	UIButton *btnGpsStart;
 	UIButton *btnSigStart;
 	UIButton *btnSend;
 	UIButton *btnRemove;
 	CLLocationManager *locMan;
+    UIBackgroundTaskIdentifier bgTask;
 	BOOL isUpdating;
 }
 -(void)startSigLog;
 -(void)startGpsLog;
+-(void)forceGpsLog;
 -(NSString *) makeLogText:(CLLocation *)loc;
-- (NSString *)getDocumentPath:(NSString *)file;
+-(NSString *) getDocumentPath:(NSString *)file;
 -(void) logText:(NSString *)log;
 -(void) logTextWithTime:(NSString *)log;
 -(void) removeLogFile;
