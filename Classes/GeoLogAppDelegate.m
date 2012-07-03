@@ -11,12 +11,16 @@
 
 #import "GeoAPI.h"
 
+#import "UIDevice+IdentifierAddition.h"
+
 @implementation GeoLogAppDelegate
 
+@synthesize TestView;
 @synthesize window;
 @synthesize navigationController;
 @synthesize tabBarController;
-
+@synthesize webView;
+@synthesize streamView;
 
 
 
@@ -28,10 +32,23 @@
 	if (locController == nil){
 		locController = [[[LocationCheckViewController alloc] initWithNibName:nil bundle:nil] retain];
         
-		[window addSubview:locController.view];        
-		[window makeKeyAndVisible];
-        [window addSubview:tabBarController.view];
+		[TestView addSubview:locController.view];  
+        [window addSubview:tabBarController.view];      
+		//[window makeKeyAndVisible];
 	}
+    
+
+    NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueIdentifier]];
+    // NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier]];
+    
+    
+    NSString *fullURL = [NSString stringWithFormat:@"http://mf2012.anorg.net/london2012/map/?uid=%@", struid];
+    NSURL *websiteURL = [NSURL URLWithString:fullURL];
+    NSURLRequest *requestObj = [NSURLRequest requestWithURL:websiteURL];
+    [self.webView loadRequest:requestObj];
+    
+    [self.streamView loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"stream" ofType:@"html"]isDirectory:NO]]];
+
     
     // [GeoAPI updatePos];
     
@@ -112,8 +129,12 @@
 	[navigationController release];
 	[tabBarController release];
 	[locController release];
+    [TestView release];
+    [webView release];
     [super dealloc];
 }
 
 
+- (IBAction)GeoSwitch:(id)sender {
+}
 @end

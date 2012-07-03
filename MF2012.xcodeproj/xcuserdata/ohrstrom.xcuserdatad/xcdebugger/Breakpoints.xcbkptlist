@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "Classes/LocationCheckViewController.m"
-         timestampString = "360838077.472781"
+         timestampString = "361037525.208991"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "24"
-         endingLineNumber = "24"
+         startingLineNumber = "26"
+         endingLineNumber = "26"
          landmarkName = "@implementation LocationCheckViewController"
          landmarkType = "3">
       </FileBreakpoint>

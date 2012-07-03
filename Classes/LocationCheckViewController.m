@@ -21,6 +21,8 @@
 
 #import "GeoAPI.h"
 
+#import "UIDevice+IdentifierAddition.h"
+
 @implementation LocationCheckViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -33,7 +35,14 @@
 	isUpdating = NO;
 	
 	// mapview
-	mapView = [[MKMapView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	//mapView = [[MKMapView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    //mapView = [[MKMapView alloc] initWithFrame:self.view.bounds];
+    //mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0,24,320,460)];
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0,0,1,1)];
+    
+    mapView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+
+    
 	mapView.delegate = self;
     // mapView.mapType = MKMapTypeSatellite;
 	[mapView setShowsUserLocation:YES];
@@ -42,20 +51,11 @@
 	btnGpsStart = [UIButton buttonWithType:UIButtonTypeRoundedRect];
 	[btnGpsStart addTarget:self action:@selector(pressGpsStart:) forControlEvents:UIControlEventTouchUpInside];
 	[btnGpsStart setTitle:kLBL_GPSSTART forState:UIControlStateNormal];
-	[btnGpsStart setFrame:CGRectMake(10, 400, 300, 40)];
+	[btnGpsStart setFrame:CGRectMake(40, 330, 240, 30)];
     
-	btnSend = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	[btnSend addTarget:self action:@selector(pressSend:) forControlEvents:UIControlEventTouchUpInside];
-	[btnSend setTitle:kLBL_SEND forState:UIControlStateNormal];
-	[btnSend setFrame:CGRectMake(10, 400, 100, 40)];
-    
-	btnRemove = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	[btnRemove addTarget:self action:@selector(pressRemove:) forControlEvents:UIControlEventTouchUpInside];
-	[btnRemove setTitle:kLBL_REMOVE forState:UIControlStateNormal];
-	[btnRemove setFrame:CGRectMake(210, 400, 100, 40)];
 	[self.view addSubview:mapView];
 	[self.view addSubview:btnGpsStart];
-	[self.view addSubview:btnSigStart];
+
 	
     return self;
 }
@@ -106,12 +106,18 @@
                         [[UIDevice currentDevice] batteryLevel]
 						];
     
+    
     NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueIdentifier]];
+    
+    // NSString *struid = [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier]];
+    
+    
+    NSLog(@"%@",[[UIDevice currentDevice] uniqueDeviceIdentifier]);
     
     NSString *strcoordinate = [NSString stringWithFormat: @"POINT (%0.8f %0.8f)", loc.coordinate.longitude, loc.coordinate.latitude];
 
     
-    RFRequest *r = [RFRequest requestWithURL:[NSURL URLWithString:@"http://movingforest.net.node05.daj.anorg.net/"]type:RFRequestMethodPost resourcePathComponents:@"forest", @"api", @"positions/?format=json", nil];
+    RFRequest *r = [RFRequest requestWithURL:[NSURL URLWithString:@"http://node02.daj.anorg.net/"]type:RFRequestMethodPost resourcePathComponents:@"forest", @"api", @"positions/?format=json", nil];
     
     
     [r addParam:strcoordinate forKey:@"coordinates"];
@@ -218,11 +224,11 @@
 
 	}else{
 		[self logText:@"start logging"];
-        NSLog(@"Simple message");
-		[locMan startUpdatingLocation];
+        //NSLog(@"Simple message");
+		//[locMan startUpdatingLocation];
         //[locMan startMonitoringSignificantLocationChanges];
-		isUpdating = YES;
-		[btnGpsStart setTitle:kLBL_STOP forState:UIControlStateNormal];
+		//isUpdating = YES;
+		//[btnGpsStart setTitle:kLBL_STOP forState:UIControlStateNormal];
 	}
 }
 
